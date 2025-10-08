@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Semplice</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100%;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        .calendar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        .calendar-title {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin: 0;
+            letter-spacing: 2px;
+        }
+
+        .month-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .nav-button {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .current-month {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e0e0e0;
+            margin: 0;
+        }
+
+        .day-header {
+            background: #f8f9fa;
+            padding: 15px 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #495057;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .day-cell {
+            background: white;
+            min-height: 120px;
+            padding: 10px;
+            position: relative;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .day-cell:hover {
+            background: #f8f9ff;
+        }
+
+        .day-number {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 1rem;
+        }
+
+        .other-month {
+            color: #ccc;
+            background: #fafafa;
+        }
+
+        .today {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        }
+
+        .today .day-number {
+            color: white;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 0 8px 0;
+        }
+
+        .appointment-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            font-size: 0.8rem;
+            padding: 4px 0;
+            margin-bottom: 4px;
+            border-bottom: 1px dashed #ddd;
+            outline: none;
+            color: #555;
+        }
+
+        .appointment-input:focus {
+            border-bottom-color: #4facfe;
+            background: rgba(79, 172, 254, 0.05);
+        }
+
+        .appointment-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+            padding: 4px 6px;
+            font-size: 0.8rem;
+            line-height: 1.2;
+            border-radius: 6px;
+            border-left: 4px solid #ddd;
+            background: rgba(0,0,0,0.02);
+        }
+
+        .appointment-item.amazon {
+            border-left-color: #2196F3;
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        .appointment-item.siti {
+            border-left-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+
+        .appointment-item.interno {
+            border-left-color: #F44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .appointment-item.altro {
+            border-left-color: #9C27B0;
+            background: rgba(156, 39, 176, 0.1);
+        }
+
+        .appointment-checkbox {
+            margin-right: 6px;
+            cursor: pointer;
+            transform: scale(0.9);
+        }
+
+        .appointment-text {
+            flex: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .appointment-text.completed {
+            text-decoration: line-through;
+            color: #888;
+            opacity: 0.7;
+        }
+
+        .delete-btn {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            cursor: pointer;
+            margin-left: 4px;
+            opacity: 0;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .appointment-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            background: #ff5252;
+            transform: scale(1.1);
+        }
+
+        .category-selector {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            margin-right: 6px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .category-selector:focus {
+            border-color: #4facfe;
+        }
+
+        .add-appointment-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 6px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-top: 4px;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .add-appointment-btn:hover {
+            opacity: 1;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .calendar-title {
+                font-size: 1.8rem;
+            }
+            
+            .day-cell {
+                min-height: 100px;
+                padding: 8px;
+            }
+            
+            .appointment-input, .appointment-text {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <h1 class="calendar-title">📅 Calendario</h1>
+            <div class="month-navigation">
+                <button class="nav-button" onclick="changeMonth(-1)">← Precedente</button>
+                <div class="current-month" id="currentMonth"></div>
+                <button class="nav-button" onclick="changeMonth(1)">Successivo →</button>
+            </div>
+        </div>
+        
+        <div class="calendar-grid" id="calendarGrid">
+            <!-- Il calendario verrà generato qui -->
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let appointments = JSON.parse(localStorage.getItem('calendarAppointments')) || {};
+
+        const monthNames = [
+            'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
+            'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
+        ];
+
+        const dayNames = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];
+
+        function saveAppointments() {
+            localStorage.setItem('calendarAppointments', JSON.stringify(appointments));
+        }
+
+        function getDateKey(date) {
+            return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return date.getDate() === today.getDate() &&
+                   date.getMonth() === today.getMonth() &&
+                   date.getFullYear() === today.getFullYear();
+        }
+
+        function addAppointment(dateKey) {
+            if (!appointments[dateKey]) {
+                appointments[dateKey] = [];
+            }
+            
+            appointments[dateKey].push({
+                id: Date.now(),
+                text: '',
+                completed: false,
+                category: 'altro'
+            });
+            
+            saveAppointments();
+            renderCalendar();
+        }
+
+        function updateAppointment(dateKey, appointmentId, text) {
+            const appointment = appointments[dateKey]?.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                appointment.text = text;
+                saveAppointments();
+            }
+        }
+
+        function updateCategory(dateKey, appointmentId, category) {
+            const appointment = appointments[dateKey]?.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                appointment.category = category;
+                saveAppointments();
+                renderCalendar();
+            }
+        }
+
+        function toggleAppointment(dateKey, appointmentId) {
+            const appointment = appointments[dateKey]?.find(apt => apt.id === appointmentId);
+            if (appointment) {
+                appointment.completed = !appointment.completed;
+                saveAppointments();
+                renderCalendar();
+            }
+        }
+
+        function deleteAppointment(dateKey, appointmentId) {
+            if (appointments[dateKey]) {
+                appointments[dateKey] = appointments[dateKey].filter(apt => apt.id !== appointmentId);
+                if (appointments[dateKey].length === 0) {
+                    delete appointments[dateKey];
+                }
+                saveAppointments();
+                renderCalendar();
+            }
+        }
+
+        function renderAppointments(dateKey) {
+            const dayAppointments = appointments[dateKey] || [];
+            let html = '';
+            
+            dayAppointments.forEach(appointment => {
+                // Assicurati che ogni appuntamento abbia una categoria (per compatibilità con dati esistenti)
+                if (!appointment.category) {
+                    appointment.category = 'altro';
+                }
+                
+                html += `
+                    <div class="appointment-item ${appointment.category}">
+                        <select class="category-selector" onchange="updateCategory('${dateKey}', ${appointment.id}, this.value)">
+                            <option value="amazon" ${appointment.category === 'amazon' ? 'selected' : ''}>🔵 Amazon</option>
+                            <option value="siti" ${appointment.category === 'siti' ? 'selected' : ''}>🟢 Siti</option>
+                            <option value="interno" ${appointment.category === 'interno' ? 'selected' : ''}>🔴 Interno</option>
+                            <option value="altro" ${appointment.category === 'altro' ? 'selected' : ''}>🟣 Altro</option>
+                        </select>
+                        <input type="checkbox" class="appointment-checkbox" 
+                               ${appointment.completed ? 'checked' : ''} 
+                               onchange="toggleAppointment('${dateKey}', ${appointment.id})">
+                        <input type="text" class="appointment-text ${appointment.completed ? 'completed' : ''}" 
+                               value="${appointment.text}" 
+                               placeholder="Nuovo appuntamento..."
+                               onchange="updateAppointment('${dateKey}', ${appointment.id}, this.value)"
+                               onblur="if(!this.value) deleteAppointment('${dateKey}', ${appointment.id})">
+                        <button class="delete-btn" onclick="deleteAppointment('${dateKey}', ${appointment.id})">×</button>
+                    </div>
+                `;
+            });
+            
+            html += `<button class="add-appointment-btn" onclick="addAppointment('${dateKey}')">+ Aggiungi</button>`;
+            
+            return html;
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            let html = '';
+            
+            // Headers dei giorni
+            dayNames.forEach(day => {
+                html += `<div class="day-header">${day}</div>`;
+            });
+            
+            // Celle dei giorni
+            const currentDateObj = new Date(startDate);
+            for (let i = 0; i < 42; i++) {
+                const dateKey = getDateKey(currentDateObj);
+                const isCurrentMonth = currentDateObj.getMonth() === month;
+                const isTodayDate = isToday(currentDateObj);
+                
+                let cellClass = 'day-cell';
+                if (!isCurrentMonth) cellClass += ' other-month';
+                if (isTodayDate) cellClass += ' today';
+                
+                html += `
+                    <div class="${cellClass}">
+                        <div class="day-number">${currentDateObj.getDate()}</div>
+                        ${isCurrentMonth ? renderAppointments(dateKey) : ''}
+                    </div>
+                `;
+                
+                currentDateObj.setDate(currentDateObj.getDate() + 1);
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        // Inizializza il calendario
+        renderCalendar();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98b5f13a303783ae',t:'MTc1OTkyOTY5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
